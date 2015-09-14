@@ -19,6 +19,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import read_spe
 import fileinput
+from writetimestamps import writetimestamps
 
 #stage variable tracks what the program should currently be doing
 # 0 - Just initialized, waiting for SPE file
@@ -118,43 +119,9 @@ class KFrameView(pg.ImageView):
     #print frame number on change
 
     def writeTimes(self):
-        header=""
-        #check whether there is a footer
         self.spe = read_spe.File(self.filename)
-        if hasattr(self.spe, 'footer_metadata'):
-            footer_metadata = BeautifulSoup(self.spe.footer_metadata, "xml")
-            trigger_response = footer_metadata.find(name='TriggerResponse').text
-            ts_begin = footer_metadata.find(name='TimeStamp', event='ExposureStarted').attrs['absoluteTime']
-            dt_begin = dateutil.parser.parse(ts_begin)
-            ticks_per_second = int(footer_metadata.find(name='TimeStamp', event='ExposureStarted').attrs['resolution'])
-        else:
-            header = header + "# WARNING: No XML footer metadata.\n" + "# Unknown trigger response.\n" + "# Using file creation time as absolute timestamp.\n" + "# Assuming 1E6 ticks per seconds.\n"
-            trigger_response = ""
-            dt_begin = dt.datetime.utcfromtimestamp(os.path.getctime(self.filename))
-            ticks_per_second = 1E6  
-        
-        idx_metadata_map = {}
-        for idx in xrange(self.spe.get_num_frames()):
-            (frame, metadata) = self.spe.get_frame(idx)
-            idx_metadata_map[idx] = metadata
-        self.spe.close()
-        df_metadata = pd.DataFrame.from_dict(idx_metadata_map, orient='index')
-        df_metadata = df_metadata.set_index(keys='frame_tracking_number')
-        df_metadata = df_metadata[['time_stamp_exposure_started', 'time_stamp_exposure_ended']].applymap(lambda x: x / ticks_per_second)
-        df_metadata = df_metadata[['time_stamp_exposure_started', 'time_stamp_exposure_ended']].applymap(lambda x : dt_begin + dt.timedelta(seconds=x))
-        df_metadata[['diff_time_stamp_exposure_started', 'diff_time_stamp_exposure_ended']] = df_metadata - df_metadata.shift()
-        header += ("# Trigger response = {tr}".format(tr=trigger_response)+"\n")
-        header += ("# Absolute timestamp = {dt_begin}".format(dt_begin=dt_begin)+"\n")
-        header += ("# Ticks per second = {tps}".format(tps=ticks_per_second))
-        df_metadata.head()
-        
-        # Write out as CSV to source directory of SPE file.
+        writetimestamps(self.spe,self.filename)
         fpath_csv = os.path.splitext(self.filename)[0]+'_timestamps.csv'
-        df_metadata.to_csv(fpath_csv, quoting=csv.QUOTE_NONNUMERIC)
-        for line in fileinput.input([fpath_csv], inplace=True):
-            if fileinput.isfirstline():
-                print header
-            print line,
         return fpath_csv
 
 class KMainWindow(QtGui.QMainWindow):
