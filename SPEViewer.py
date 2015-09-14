@@ -236,7 +236,7 @@ class KMainWindow(QtGui.QMainWindow):
         self.statusbar.showMessage("Load a SPE file.")
         fname = str(QtGui.QFileDialog.getOpenFileName(self, 'Open file', 
                 os.getcwd()))
-        if fname != '':
+        if fname != '' and fname[-4:]=='.spe':
             self.statusbar.showMessage("Loading SPE (this may take a moment)...")
             self.frameview.filename=os.path.abspath(fname)
             self.frameview.loadSPE()
