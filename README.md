@@ -1,5 +1,5 @@
 # SPEViewer
-This simple Mac OSX application allows the user to view images contained in the SPE file format 3.0, 
+This simple pyqtgraph application allows the user to view images contained in the SPE file format 3.0, 
 specifically data acquired with the LightField software and the ProEM 1024B camera.
 
  - command+O opens a new SPE file.
