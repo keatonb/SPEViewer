@@ -9,16 +9,10 @@ import pyqtgraph as pg
 #import math
 import sys
 import os
-import csv
 #import time
-import datetime as dt
-import dateutil.parser
-import pandas as pd
 #from astropy.stats import biweight_location, biweight_midvariance
 #from photutils import daofind
-from bs4 import BeautifulSoup
 import read_spe
-import fileinput
 from writetimestamps import writetimestamps
 
 #stage variable tracks what the program should currently be doing
@@ -39,7 +33,7 @@ class KFrameView(pg.ImageView):
         super(KFrameView, self).__init__()
         #Hide the stupid buttons    
         self.ui.roiBtn.hide()
-        self.ui.normBtn.hide()  
+        #self.ui.normBtn.hide()  
         #self.timeLine.si
 
 
